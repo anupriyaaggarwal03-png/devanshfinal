@@ -22,14 +22,24 @@
             font-family: 'Playfair Display', serif;
             text-align: center;
             overflow: hidden;
+            transition: background-color 0.8s ease; /* Smooth transition for movie effect */
         }
 
-        /* --- THE DAINTY FRILL CONTAINER --- */
+        /* Cinema Flash Effect Overlay */
+        #cinema-flash {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: white;
+            opacity: 0;
+            z-index: 200;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
         .container {
             background: rgba(255, 253, 250, 0.95);
             padding: 2.5rem;
             border-radius: 20px;
-            /* Border starts gold, but will be animated */
             border: 2px solid #d4af37;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
             width: 85%;
@@ -40,30 +50,11 @@
             backdrop-filter: blur(5px);
         }
 
-        /* Border Color Animation */
         @keyframes borderChanger {
-            0% { border-color: #d4af37; } /* Gold */
-            33% { border-color: #8b0000; } /* Crimson */
-            66% { border-color: #fffaf0; } /* Floral White */
+            0% { border-color: #d4af37; }
+            33% { border-color: #8b0000; }
+            66% { border-color: #fffaf0; }
             100% { border-color: #d4af37; }
-        }
-
-        /* The "Frill" Edge Effect - Updated to respond to border changes */
-        .container::before {
-            content: "";
-            position: absolute;
-            top: -12px; left: -12px; right: -12px; bottom: -12px;
-            border: 15px solid transparent;
-            /* Using currentColor so it matches the animated border color of the parent */
-            border-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 5Q25 0 30 5t5 5-5 5-5-5-5 5-5-5 5-5 5-5z' fill='none' stroke='%23d4af37' stroke-width='1'/%3E%3C/svg%3E") 30 round;
-            pointer-events: none;
-            opacity: 0.6;
-            animation: opacityPulse 2s ease-in-out infinite;
-        }
-
-        @keyframes opacityPulse {
-            0%, 100% { opacity: 0.4; }
-            50% { opacity: 0.8; }
         }
 
         @keyframes floatContainer {
@@ -83,7 +74,6 @@
             animation: borderChanger 5s linear infinite;
         }
 
-        /* --- THE ENVELOPE --- */
         #envelope-wrapper {
             display: none;
             cursor: pointer;
@@ -100,11 +90,8 @@
         #envelope-wrapper::before {
             content: "🌸 . 🌷 . 🌸";
             position: absolute;
-            top: 10px;
-            width: 100%;
-            left: 0;
-            font-size: 10px;
-            opacity: 0.7;
+            top: 10px; width: 100%; left: 0;
+            font-size: 10px; opacity: 0.7;
         }
 
         #wax-seal {
@@ -169,17 +156,19 @@
             100% { box-shadow: 0 0 5px #8b0000; }
         }
 
-        #celebration, #flower-page, #wait-wait-text { display: none; }
+        #celebration, #flower-page, #wait-wait-text { 
+            display: none; 
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
         
         .flower-img {
             width: 100%;
             max-width: 280px;
             border-radius: 10px;
             border: 4px double #d4af37;
-            animation: fadeIn 2s ease, borderChanger 5s linear infinite;
+            animation: borderChanger 5s linear infinite;
         }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .heart {
             position: fixed;
@@ -198,6 +187,8 @@
 </head>
 <body>
 
+    <div id="cinema-flash"></div>
+
     <audio id="bgMusic" loop>
         <source src="music.mp3" type="audio/mpeg">
     </audio>
@@ -207,13 +198,13 @@
         <h1>Dearest Devansh,</h1>
         <p style="font-style: italic; color: #555;">Would you do me the immense honor of being mine?</p>
         <div style="display: flex; justify-content: center; gap: 15px; margin-top: 20px;">
-            <button id="yesBtn" onclick="celebrate()">I shall</button>
+            <button id="yesBtn" onclick="movieSequence()">I shall</button>
             <button id="noBtn" onclick="makeYesBigger()">I cannot</button>
         </div>
     </div>
 
     <div id="celebration" class="container">
-        <video id="successVideo" class="media-style" autoplay muted loop playsinline>
+        <video id="successVideo" class="media-style" muted loop playsinline>
             <source src="celebration.mp4" type="video/mp4">
         </video>
         <h1>A Most Joyous Day!</h1>
@@ -253,16 +244,42 @@
             }
         }
 
-        function celebrate() {
+        // NEW MOVIE SEQUENCE LOGIC
+        function movieSequence() {
             playMusic();
-            document.getElementById('main-content').style.display = 'none';
-            document.getElementById('celebration').style.display = 'block';
-            startConfetti();
-            setTimeout(() => { document.getElementById('wait-wait-text').style.display = 'block'; }, 35000);
+            const flash = document.getElementById('cinema-flash');
+            
+            // 1. Light Up (Flash)
+            flash.style.opacity = '1';
+            
             setTimeout(() => {
-                document.getElementById('celebration').style.display = 'none';
-                document.getElementById('envelope-wrapper').style.display = 'block';
-            }, 39000);
+                // 2. Lights Out (Black Background)
+                document.getElementById('main-content').style.display = 'none';
+                document.body.style.backgroundImage = 'none';
+                document.body.style.backgroundColor = 'black';
+                flash.style.opacity = '0';
+                
+                setTimeout(() => {
+                    // 3. Start Video (Celebration Page)
+                    const celebration = document.getElementById('celebration');
+                    celebration.style.display = 'block';
+                    setTimeout(() => { celebration.style.opacity = '1'; }, 50);
+                    
+                    const video = document.getElementById('successVideo');
+                    video.play(); // Play the video now
+                    
+                    startConfetti();
+                    
+                    // Proceed with original timers
+                    setTimeout(() => { document.getElementById('wait-wait-text').style.display = 'block'; }, 35000);
+
+                    setTimeout(() => {
+                        document.getElementById('celebration').style.display = 'none';
+                        document.getElementById('envelope-wrapper').style.display = 'block';
+                    }, 39000);
+                    
+                }, 1500); // 1.5 seconds of darkness
+            }, 300); // 0.3 seconds of flash
         }
 
         function openEnvelope() {
@@ -271,6 +288,7 @@
             setTimeout(() => {
                 envelope.style.display = 'none';
                 document.getElementById('flower-page').style.display = 'block';
+                document.getElementById('flower-page').style.opacity = '1';
                 setInterval(createHeart, 500);
             }, 2500);
         }
